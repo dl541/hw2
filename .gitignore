@@ -1,0 +1,11 @@
+.vscode/settings.json
+apps/__pycache__/mlp_resnet.cpython-310.pyc
+python/needle/__pycache__/__init__.cpython-310.pyc
+python/needle/__pycache__/autograd.cpython-310.pyc
+python/needle/__pycache__/data.cpython-310.pyc
+python/needle/__pycache__/init.cpython-310.pyc
+python/needle/__pycache__/nn.cpython-310.pyc
+python/needle/__pycache__/ops.cpython-310.pyc
+python/needle/__pycache__/optim.cpython-310.pyc
+tests/__pycache__/test_data.cpython-310-pytest-7.3.1.pyc
+tests/__pycache__/test_nn_and_optim.cpython-310-pytest-7.3.1.pyc
