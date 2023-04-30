@@ -1,5 +1,6 @@
 """The module.
 """
+from functools import reduce
 from typing import List, Callable, Any
 from needle.autograd import Tensor
 from needle import ops
@@ -105,14 +106,15 @@ class Linear(Module):
 class Flatten(Module):
     def forward(self, X):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        batchSize = X.shape[0]
+        return ops.reshape(X, (batchSize, -1))
         ### END YOUR SOLUTION
 
 
 class ReLU(Module):
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return ops.relu(x)
         ### END YOUR SOLUTION
 
 
@@ -123,14 +125,17 @@ class Sequential(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return reduce(lambda u, m: m.forward(u), self.modules, x)
         ### END YOUR SOLUTION
 
 
 class SoftmaxLoss(Module):
     def forward(self, logits: Tensor, y: Tensor):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        batchSize, classes = logits.shape
+        logsumexp = ops.logsumexp(logits, axes = (1,))
+        Zy =  ops.summation(init.one_hot(classes, y) * logits, axes = (1,))
+        return ops.summation(logsumexp - Zy) / batchSize
         ### END YOUR SOLUTION
 
 
@@ -174,7 +179,10 @@ class Dropout(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        if self.training:
+            return x * init.randb(*x.shape, p = self.p) / (1 - self.p)
+        else:
+            return x
         ### END YOUR SOLUTION
 
 
@@ -185,7 +193,7 @@ class Residual(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return self.fn(x) + x
         ### END YOUR SOLUTION
 
 
