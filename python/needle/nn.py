@@ -138,24 +138,54 @@ class SoftmaxLoss(Module):
         return ops.summation(logsumexp - Zy) / batchSize
         ### END YOUR SOLUTION
 
-
-
 class BatchNorm1d(Module):
-    def __init__(self, dim, eps=1e-5, momentum=0.1, device=None, dtype="float32"):
+
+    def __init__(self,
+                 dim,
+                 eps=1e-5,
+                 momentum=0.1,
+                 device=None,
+                 dtype="float32"):
         super().__init__()
         self.dim = dim
         self.eps = eps
         self.momentum = momentum
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.weight = Parameter(np.ones((dim)), device=device, dtype=dtype)
+        self.bias = Parameter(np.zeros((dim)), device=device, dtype=dtype)
+        self.running_mean = Tensor(np.zeros((dim)),
+                                   device=device,
+                                   dtype=dtype,
+                                   requires_grad=False)
+        self.running_var = Tensor(np.ones((dim)),
+                                  device=device,
+                                  dtype=dtype,
+                                  requires_grad=False)
         ### END YOUR SOLUTION
-
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        n, n_feature = x.shape[0], x.shape[1]
+        w = ops.broadcast_to(self.weight, x.shape)
+        b = ops.broadcast_to(self.bias, x.shape)
+        if self.training:
+            m = (x.sum(0) / n)
+            mean = ops.broadcast_to(m, x.shape)
+            v = ((x - mean)**2).sum(0) / n
+            var = ops.broadcast_to(v, x.shape)
+            ret = w * (x - mean) / ((var + self.eps)**0.5) + b
 
+            self.running_mean = self.momentum * m.data + (
+                1 - self.momentum) * self.running_mean.data
+            self.running_var = self.momentum * v.data + (
+                1 - self.momentum) * self.running_var.data
+            return ret
+        else:
+            mean = ops.broadcast_to(self.running_mean, x.shape)
+            var = ops.broadcast_to(self.running_var, x.shape)
+            ret = (x - mean) / ((var + self.eps)**0.5) * w + b
+            return ret
+        ### END YOUR SOLUTION
 
 class LayerNorm1d(Module):
     def __init__(self, dim, eps=1e-5, device=None, dtype="float32"):
@@ -163,12 +193,20 @@ class LayerNorm1d(Module):
         self.dim = dim
         self.eps = eps
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.weight = Parameter(init.ones(dim, device=device, dtype=dtype))
+        self.bias = Parameter(init.zeros(dim, device = device, dtype=dtype))
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        n = x.shape[0]
+        mean = ops.broadcast_to((x.sum(1) / self.dim).reshape((n, 1)), x.shape)
+        var = ((x - mean)**2 / self.dim).sum(1).reshape((n, 1))
+        ret = (x - mean) / ops.broadcast_to(
+            ops.power_scalar(var + self.eps, 0.5), x.shape) * ops.broadcast_to(
+                self.weight, x.shape) + ops.broadcast_to(self.bias, x.shape)
+        
+        return ret
         ### END YOUR SOLUTION
 
 
