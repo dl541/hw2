@@ -13,7 +13,7 @@ class Transform:
 
 
 class RandomFlipHorizontal(Transform):
-    def __init__(self, p = 0.5):
+    def __init__(self, p=0.5):
         self.p = p
 
     def __call__(self, img):
@@ -36,19 +36,27 @@ class RandomCrop(Transform):
         self.padding = padding
 
     def __call__(self, img):
-        """ Zero pad and then randomly crop an image.
+        """Zero pad and then randomly crop an image.
         Args:
              img: H x W x C NDArray of an image
-        Return 
+        Return
             H x W x C NAArray of cliped image
         Note: generate the image shifted by shift_x, shift_y specified below
         """
-        shift_x, shift_y = np.random.randint(low=-self.padding, high=self.padding+1, size=2)
+        shift_x, shift_y = np.random.randint(
+            low=-self.padding, high=self.padding + 1, size=2
+        )
         ### BEGIN YOUR SOLUTION
         h, w, c = img.shape
         padded = np.zeros((h + 2 * self.padding, w + 2 * self.padding, c))
-        padded[self.padding:self.padding + h, self.padding: self.padding + w, :] = img
-        return padded[self.padding + shift_x: self.padding + shift_x + h, self.padding + shift_y: self.padding + shift_y + w, :]
+        padded[
+            self.padding : self.padding + h, self.padding : self.padding + w, :
+        ] = img
+        return padded[
+            self.padding + shift_x : self.padding + shift_x + h,
+            self.padding + shift_y : self.padding + shift_y + w,
+            :,
+        ]
         ### END YOUR SOLUTION
 
 
@@ -87,23 +95,23 @@ class DataLoader:
             (default: ``1``).
         shuffle (bool, optional): set to ``True`` to have the data reshuffled
             at every epoch (default: ``False``).
-     """
+    """
     dataset: Dataset
-    batch_size: Optional[int]
+    batch_size: int
 
     def __init__(
         self,
         dataset: Dataset,
-        batch_size: Optional[int] = 1,
+        batch_size: int = 1,
         shuffle: bool = False,
     ):
-
         self.dataset = dataset
         self.shuffle = shuffle
         self.batch_size = batch_size
         if not self.shuffle:
-            self.ordering = np.array_split(np.arange(len(dataset)), 
-                                           range(batch_size, len(dataset), batch_size))
+            self.ordering = np.array_split(
+                np.arange(len(dataset)), range(batch_size, len(dataset), batch_size)
+            )
 
     def __iter__(self):
         ### BEGIN YOUR SOLUTION
@@ -111,8 +119,9 @@ class DataLoader:
         if self.shuffle:
             arr = np.arange(len(self.dataset))
             np.random.shuffle(arr)
-            self.ordering = np.array_split(arr, 
-                                           range(self.batch_size, len(self.dataset), self.batch_size))
+            self.ordering = np.array_split(
+                arr, range(self.batch_size, len(self.dataset), self.batch_size)
+            )
         ### END YOUR SOLUTION
         return self
 
@@ -157,6 +166,7 @@ class MNISTDataset(Dataset):
         ### BEGIN YOUR SOLUTION
         return len(self.y)
         ### END YOUR SOLUTION
+
 
 class NDArrayDataset(Dataset):
     def __init__(self, *arrays):
